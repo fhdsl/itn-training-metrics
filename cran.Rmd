@@ -16,6 +16,7 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 library(tidyverse)
 library(DT)
 library(scales)
+library(googlesheets4)
 ```
 
 ```{r, echo=FALSE}
@@ -134,3 +135,37 @@ Total downloads, summed across packages, for all time:
 cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
 ```
 
+## Loqui
+
+<!--
+Add the logo?
+-->
+
+```{r echo=FALSE, message=FALSE, warning-FALSE, results='hide'}
+gs4_auth(email="kathryn.j.isaac@gmail.com", scopes = "spreadsheets.readonly")
+loqui_data <- read_sheet("https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k")
+```
+
+<!--
+Currently data hasn't been and can't be added to this spreadsheet (as of July 2024)...Fixing the appending problem and investigating if we can estimate at least how many videos we don't have user data for
+-->
+
+Number of unique Loqui users:
+
+```{r echo=FALSE, results = 'asis'}
+cat(length(unique(loqui_data$email)))
+```
+
+<!--
+Do we want to look at email domains and see what institutions we may be able to extrapolate?
+-->
+
+Number of videos made with Loqui:
+
+```{r echo=FALSE, results = 'asis'}
+cat(comma(nrow(loqui_data)))
+```
+
+<!--
+Add average (or other stats...) duration of videos produced with Loqui?
+-->
