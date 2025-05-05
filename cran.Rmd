@@ -15,6 +15,7 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(DT)
+library(scales)
 ```
 
 ```{r, echo=FALSE}
@@ -98,7 +99,7 @@ download_stats_processed %>%
  DT::datatable(
       download_stats_processed %>%
       group_by(package) %>%
-      summarize(total_downloads = sum(monthly_downloads)),
+      summarize(total_downloads = comma(sum(monthly_downloads))),
       colnames = c("Package", "Total Downloads"),
       options = list(lengthChange = FALSE, # remove "Show X entries"
                      scrollY = "275px"), #may need to increase if you add packages and don't want to scroll
@@ -115,7 +116,7 @@ DT::datatable(
       download_stats_processed %>%
         filter(Month > format(as.Date(today() - months(6)), "%Y-%m")) %>% #within 6 months
         group_by(package) %>%
-        summarize(total_downloads = sum(monthly_downloads)),
+        summarize(total_downloads = comma(sum(monthly_downloads))),
       colnames = c("Package", "Total Downloads (last 6 months)"),
       options = list(lengthChange = FALSE, # remove "Show X entries"
                      scrollY = "275px"), #may need to increase if you add packages and don't want to scroll
@@ -130,6 +131,6 @@ DT::datatable(
 Total downloads, summed across packages, for all time: 
 
 ```{r echo=FALSE, results = 'asis'}
-cat(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE))
+cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
 ```
 
