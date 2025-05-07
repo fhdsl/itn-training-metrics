@@ -8,9 +8,7 @@ output:
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 ---
 
-
-
-## CRAN Download stats
+## CRAN package download stats
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -136,45 +134,64 @@ Total downloads, summed across packages, for all time:
 cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
 ```
 
-## OTTR Template Users
+
+## GitHub Template Repositories
+
+```{r echo = FALSE}
+get_sync_repos <- function(read_yml_link){
+  
+  sync_file_contents <- read_yaml(read_yml_link)
+  
+  sync_repos <- sync_file_contents$group[[1]]$repos %>%
+    str_trim() %>%
+    as.data.frame() %>%
+    separate_longer_delim(cols = ".", delim="\n") %>%
+    separate(".", c("org", "repo"), sep = "/", remove = FALSE)
+  
+  return(sync_repos)
+}
+```
+
+```{r echo=FALSE, results='asis'}
+echo_num <- function(sync_df, template_name){
+  cat(paste0("There are ", nrow(sync_df), " GitHub repositories receiving updates from the ", template_name, ". ", nrow(sync_df %>% filter(org == "jhudsl" | org == "fhdsl" | org == "ottrproject")), " of those are within the jhudsl, fhdsl, or ottrproject organizations"))
+}
+```
+
+### OTTR Template - Courses
 
 <!--
 Main OTTR template
 -->
 
-```{r echo=FALSE}
-ottr_template_sync <- read_yaml("https://raw.githubusercontent.com/ottrproject/OTTR_Template/refs/heads/main/.github/sync.yml")
+```{r echo=FALSE, results='asis'}
+sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/OTTR_Template/refs/heads/main/.github/sync.yml")
+echo_num(sync_repos, "OTTR_Template")
 ```
 
-```{r echo=FALSE}
-sync_repos <- ottr_template_sync$group[[1]]$repos %>%
-  str_trim() %>%
-  as.data.frame() %>%
-  separate_longer_delim(cols = ".", delim = "\n") %>%
-  separate(".", c("org", "repo"), sep = "/", remove = FALSE)
-```
-
-There are `r nrow(sync_repos)` GitHub repositories receiving updates from the OTTR Course Template. `r nrow(sync_repos %>% filter(org == "jhudsl" | org == "fhdsl"))` of those are within the jhudsl and fhdsl organizations.
+### OTTR Template - Websites
 
 <!--
 OTTR website template
 -->
 
-```{r echo=FALSE}
-ottr_web_sync <- read_yaml("https://raw.githubusercontent.com/ottrproject/OTTR_Template_Website/refs/heads/main/.github/sync.yml")
+```{r echo=FALSE, results='asis'}
+web_sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/OTTR_Template_Website/refs/heads/main/.github/sync.yml")
+echo_num(web_sync_repos, "OTTR_Template_Website")
 ```
 
-```{r echo=FALSE}
-web_sync_repos <- ottr_web_sync$group[[1]]$repos %>%
-  str_trim() %>%
-  as.data.frame() %>%
-  separate_longer_delim(cols = ".", delim = "\n") %>%
-  separate(".", c("org", "repo"), sep = "/", remove = FALSE)
+<!--
+### Metricminer Dashboard
+
+```{r echo = FALSE, eval = FALSE, results='asis'}
+dashboard_sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/metricminer-dashboard/refs/heads/main/.github/sync.yml")
+echo_num(dashboard_sync_repos, "metricminer-dashboard)
 ```
+-->
 
-There are `r nrow(web_sync_repos)` GitHub repositories receiving updates from the OTTR Website Template. `r nrow(web_sync_repos %>% filter(org == "jhudsl" | org == "fhdsl"))` of those are within the jhudsl and fhdsl organizations.
+## Shiny Apps
 
-## Loqui
+### Loqui
 
 <!--
 Add the logo?
@@ -186,7 +203,7 @@ loqui_data <- read_sheet("https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txE
 ```
 
 <!--
-Currently data hasn't been and can't be added to this spreadsheet (as of July 2024)...Fixing the appending problem and investigating if we can estimate at least how many videos we don't have user data for
+Now (as of May 6 2025) fixed for data to this spreadsheet (previously wasn't as of July 2024)...Have timestamps (or placeholders) for videos that were produced with Loqui between those days/for which we don't have user data
 -->
 
 Number of unique Loqui users:
@@ -207,4 +224,8 @@ cat(comma(nrow(loqui_data)))
 
 <!--
 Add average (or other stats...) duration of videos produced with Loqui?
+-->
+
+<!--
+Make a plot showing when loqui has been used? Does it get used a lot before semesters? Before the ITCR annual meeting? etc.
 -->
