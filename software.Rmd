@@ -17,6 +17,7 @@ library(tidyverse)
 library(DT)
 library(scales)
 library(googlesheets4)
+library(yaml)
 ```
 
 ```{r, echo=FALSE}
@@ -134,6 +135,44 @@ Total downloads, summed across packages, for all time:
 ```{r echo=FALSE, results = 'asis'}
 cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
 ```
+
+## OTTR Template Users
+
+<!--
+Main OTTR template
+-->
+
+```{r echo=FALSE}
+ottr_template_sync <- read_yaml("https://raw.githubusercontent.com/ottrproject/OTTR_Template/refs/heads/main/.github/sync.yml")
+```
+
+```{r echo=FALSE}
+sync_repos <- ottr_template_sync$group[[1]]$repos %>%
+  str_trim() %>%
+  as.data.frame() %>%
+  separate_longer_delim(cols = ".", delim = "\n") %>%
+  separate(".", c("org", "repo"), sep = "/", remove = FALSE)
+```
+
+There are `r nrow(sync_repos)` GitHub repositories receiving updates from the OTTR Course Template. `r nrow(sync_repos %>% filter(org == "jhudsl" | org == "fhdsl"))` of those are within the jhudsl and fhdsl organizations.
+
+<!--
+OTTR website template
+-->
+
+```{r echo=FALSE}
+ottr_web_sync <- read_yaml("https://raw.githubusercontent.com/ottrproject/OTTR_Template_Website/refs/heads/main/.github/sync.yml")
+```
+
+```{r echo=FALSE}
+web_sync_repos <- ottr_web_sync$group[[1]]$repos %>%
+  str_trim() %>%
+  as.data.frame() %>%
+  separate_longer_delim(cols = ".", delim = "\n") %>%
+  separate(".", c("org", "repo"), sep = "/", remove = FALSE)
+```
+
+There are `r nrow(web_sync_repos)` GitHub repositories receiving updates from the OTTR Website Template. `r nrow(web_sync_repos %>% filter(org == "jhudsl" | org == "fhdsl"))` of those are within the jhudsl and fhdsl organizations.
 
 ## Loqui
 
