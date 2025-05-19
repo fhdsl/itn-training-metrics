@@ -15,7 +15,6 @@ library(tidyverse)
 library(DT)
 library(scales)
 library(googlesheets4)
-gs4_deauth()
 library(yaml)
 library(cranlogs)
 ```
@@ -198,6 +197,10 @@ echo_num(dashboard_sync_repos, "metricminer-dashboard)
 <!--
 Add the logo?
 -->
+
+```{r, eval=FALSE, echo=FALSE}
+gs4_auth(email = TRUE)
+```
 
 ```{r echo=FALSE, message=FALSE, warning-FALSE, results='hide'}
 loqui_sheet <- "https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k"
