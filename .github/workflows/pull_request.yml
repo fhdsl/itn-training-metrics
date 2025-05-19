@@ -126,7 +126,16 @@ jobs:
        # Now we want to render all the html files from the Rmd files
       - name: Run render html
         id: site
-        run: Rscript -e "rmarkdown::render_site()"
+        run: |
+          if [ ! -d .secrets ]; then
+            mkdir .secrets
+          fi
+          jq -n '${{ secrets.GSHEET_PRIVATE_KEY }}' > .secrets/${{ secrets.GSHEET_CLIENT_EMAIL }}
+          if test -f .secrets/${{ secrets.GSHEET_CLIENT_EMAIL }}; then
+            echo "Key created!"
+          fi
+          Rscript --vanilla "resources/render.R"
+          rm -rf .secrets
 
       # This checks on the steps before it and makes sure that they completed.
       # If the renders didn't complete we don't want to commit the file changes
