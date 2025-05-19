@@ -15,6 +15,7 @@ library(tidyverse)
 library(DT)
 library(scales)
 library(googlesheets4)
+gs4_deauth()
 library(yaml)
 ```
 
@@ -37,7 +38,7 @@ download_stats <- rbind(download_stats, download_stats_contributing)
 ```
 
 ```{r, echo=FALSE, warning = FALSE, message=FALSE}
-download_stats_processed <- download_stats %>% 
+download_stats_processed <- download_stats %>%
   separate(date, into=c("year", "month name", "day"), sep = "-") %>%
   unite("Month", c("year", "month name"), sep='-', remove=TRUE) %>%  
   group_by(Month, package) %>%
@@ -56,7 +57,7 @@ Alphabetically the packages are
 - spatialTime (when added, we'll use `#472d7b`)
 - text2speech (color is `#addc30`)
 
-Colors are viridis and have been grabbing options from here: 
+Colors are viridis and have been grabbing options from here:
 c("#fde725", "#addc30", "#5ec962", "#28ae80", "#21918c", "#2c728e", "#3b528b", "#472d7b", "#440154")
 -->
 
@@ -70,7 +71,7 @@ package_colors <- c("#440154", "#2c728e", "#fde725", "#28ae80" ,"#addc30" )
 months_vec <- seq(as.Date("2017-08-01"), #set this reference date to the first day of hte month to make this vector work (even though ari was added at the end of the month)
                   as.Date(today()), by="months")
 
-download_stats_processed %>% 
+download_stats_processed %>%
   ggplot(aes(Month, monthly_downloads, group=package, color = package)) +
      geom_line() +
      geom_point() +
@@ -84,7 +85,7 @@ download_stats_processed %>%
      geom_vline(aes(xintercept="2024-02"), linetype="dashed", linewidth = 1.5, color = '#fde725') + #metricminer published date
      #geom_vline(aes(xintercept="2025-01"), linetype="dashed", linewidth = 1.5, color="#472d7b") + #spatialTime published witwh contributions date
      theme(axis.text.x = element_text(angle = 90),
-           legend.position = "bottom") + 
+           legend.position = "bottom") +
      scale_x_discrete(breaks = format(months_vec[seq(1, length(months_vec), 2)], "%Y-%m")) + #every other month
      labs(x = NULL,
           y = "Monthly Downloads",
@@ -128,7 +129,7 @@ DT::datatable(
 
 ### Total downloads overall
 
-Total downloads, summed across packages, for all time: 
+Total downloads, summed across packages, for all time:
 
 ```{r echo=FALSE, results = 'asis'}
 cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
@@ -139,15 +140,15 @@ cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)
 
 ```{r echo = FALSE}
 get_sync_repos <- function(read_yml_link){
-  
+
   sync_file_contents <- read_yaml(read_yml_link)
-  
+
   sync_repos <- sync_file_contents$group[[1]]$repos %>%
     str_trim() %>%
     as.data.frame() %>%
     separate_longer_delim(cols = ".", delim="\n") %>%
     separate(".", c("org", "repo"), sep = "/", remove = FALSE)
-  
+
   return(sync_repos)
 }
 ```
@@ -199,7 +200,6 @@ Add the logo?
 
 ```{r echo=FALSE, message=FALSE, warning-FALSE, results='hide'}
 loqui_sheet <- "https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k"
-gs4_auth(email="kathryn.j.isaac@gmail.com", scopes = "spreadsheets.readonly")
 loqui_data <- read_sheet(loqui_sheet)
 loqui_data_gaps <- read_sheet(loqui_sheet, sheet = "FromLogsAndDan")
 ```
