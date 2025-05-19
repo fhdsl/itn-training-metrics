@@ -16,6 +16,7 @@ library(DT)
 library(scales)
 library(googlesheets4)
 library(yaml)
+library(cranlogs)
 ```
 
 ```{r, echo=FALSE}
