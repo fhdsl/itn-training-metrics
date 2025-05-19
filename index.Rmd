@@ -12,3 +12,8 @@ Specific resources are split among the following pages:
 * In-person training (e.g., attendance and survey responses)
 * Videos and podcast episodes
 * Collaborations
+
+This website utilizes the OTTR framework to run checks (spelling, URL, and preview) on PRs.
+<!--
+However, the workflows appear to be old OTTR at the moment.
+-->
