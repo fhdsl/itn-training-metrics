@@ -52,6 +52,10 @@ jobs:
           # use github PAT
           token: ${{ secrets.GH_PAT }}
 
+      # Set up / install jq so that json credentials can be read in
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v2.1.0
+
       # We want a fresh run of the renders each time - so first delete old html files
       - name: Delete old *.html
         run: Rscript -e "rmarkdown::clean_site(preview = FALSE)"
