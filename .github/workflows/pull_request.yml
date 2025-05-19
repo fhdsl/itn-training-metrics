@@ -3,8 +3,7 @@
 name: Pull Request
 
 on:
-  pull_request:
-    branches: [ main, staging ]
+  pull_request
 
 jobs:
 
@@ -71,7 +70,7 @@ jobs:
       error_min: 0
     secrets:
       gh_pat: ${{ secrets.GH_PAT }}
-      
+
 ############################# Readability Report ###################################
 
   readability-report:
@@ -91,7 +90,7 @@ jobs:
         with:
           github-token: ${{ secrets.GH_PAT }}
           glob: '**/*.md'
-          
+
 ###################### Render preview of website ##################
   render-preview:
     name: Render preview
