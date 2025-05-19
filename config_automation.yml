@@ -21,4 +21,4 @@ render-website: rmd_web
 
 # What docker image should be used for rendering?
 # The default is jhudsl/base_ottr:main
-rendering-docker-image: 'jhudsl/ottr_website:main'
+rendering-docker-image: 'jhudsl/ottr_website'
