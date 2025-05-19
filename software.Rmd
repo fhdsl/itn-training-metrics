@@ -198,12 +198,20 @@ Add the logo?
 -->
 
 ```{r echo=FALSE, message=FALSE, warning-FALSE, results='hide'}
+loqui_sheet <- "https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k"
 gs4_auth(email="kathryn.j.isaac@gmail.com", scopes = "spreadsheets.readonly")
-loqui_data <- read_sheet("https://docs.google.com/spreadsheets/d/1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k")
+loqui_data <- read_sheet(loqui_sheet)
+loqui_data_gaps <- read_sheet(loqui_sheet, sheet = "FromLogsAndDan")
 ```
 
 <!--
 Now (as of May 6 2025) fixed for data to this spreadsheet (previously wasn't as of July 2024)...Have timestamps (or placeholders) for videos that were produced with Loqui between those days/for which we don't have user data
+-->
+
+<!--
+`loqui_data_gaps` contains a mixture of the word "Placeholder" (videos that were made with Loqui, but without any stored metadata/users didn't receive an email of the video) and with a date/time (videos that were made with Loquid, without any stored metadata besides a timestamp note in the logs because users were sent an email of the video)
+
+`loqui_data` has a timestamp, a user email, and a video duration
 -->
 
 Number of unique Loqui users:
@@ -219,7 +227,7 @@ Do we want to look at email domains and see what institutions we may be able to 
 Number of videos made with Loqui:
 
 ```{r echo=FALSE, results = 'asis'}
-cat(comma(nrow(loqui_data)))
+cat(comma(nrow(loqui_data) + nrow(loqui_data_gaps)))
 ```
 
 <!--
