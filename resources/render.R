@@ -28,17 +28,22 @@ option_list <- list(
 # Read the results provided as command line argument
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
+print("got here")
 jsonResults_loq <- opt$data_in_loq
 jsonResults_loq_supp <- opt$data_in_loq_supp
+print("got here too")
 
 # ---------- Interpret the JSON data -----
 
 #Pull the data itself from the API results
 dfloq <- fromJSON(jsonResults_loq)
+print("this good")
 dfloq_supp <- fromJSON(jsonResults_loq_supp)
+print("this also good")
 
 dfloq <- dfloq$results$result$formatted[[2]]
 dfloq_supp <- dfloq_supp$results$result$formatted[[2]]
+print("through here fine")
 
 colnames(dfloq) <- dfloq[1, ] #colnames taken from first row of data
 dfloq <- dfloq[-1, ] #remove the first row of data (original column names)
