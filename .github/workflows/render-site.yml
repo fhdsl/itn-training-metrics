@@ -99,9 +99,7 @@ jobs:
            RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
            RESULTS_LOQ_SUPP: $ {{ steps.get_sheet_loqui_supp.outputs.results }}
          run:
-           Rscript --vanilla "resources/render.R" \
-           --data_in_loq "$RESULTS_LOQ" \
-           --data_in_loq_supp "$RESULTS_LOQ_SUPP"
+           Rscript --vanilla "resources/render.R" --data_in_loq "$RESULTS_LOQ" --data_in_loq_supp "$RESULTS_LOQ_SUPP"
 
       # This checks on the steps before it and makes sure that they completed.
       # If the renders didn't complete we don't want to commit the file changes
