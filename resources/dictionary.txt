@@ -1,4 +1,5 @@
 cheatsheet
+Coursera
 css
 custimization
 cwrigh
@@ -11,12 +12,16 @@ GitHub
 HTTPS
 ITN
 ITCR
+Leanpub
 lightblue
 lightgreen
+Loqui
 OTTR
+PRs
 Rmd
 repo
 subdir
+tabset
 th
 tibble
 www
