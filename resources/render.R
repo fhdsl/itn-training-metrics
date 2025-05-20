@@ -26,7 +26,7 @@ option_list <- list(
 )
 
 # Read the results provided as command line argument
-opt_parser <- optparsea::OptionParser(option_list = option_list)
+opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 jsonResults_loq <- opt$data_in_loq
 jsonResults_loq_supp <- opt$data_in_loq_supp
