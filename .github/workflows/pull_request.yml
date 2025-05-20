@@ -119,27 +119,52 @@ jobs:
           git merge -s recursive --strategy-option=theirs origin/${{ github.head_ref }} --allow-unrelated-histories
         shell: bash
 
-      # Set up / install jq so that json credentials can be read in
-      - name: Install jq
-        uses: dcarbone/install-jq-action@v2.1.0
-
       # We want a fresh run of the renders each time - so first delete old html files
       - name: Delete old *.html
         run: Rscript -e "rmarkdown::clean_site(preview = FALSE)"
 
-       # Now we want to render all the html files from the Rmd files
+      #Now we want to get data from googlesheets and make it available to all of the Rmds and render all the html files from the Rmd files
+      # Loqui data (3 columns: date_time, video_duration, email)
+      - name: get loqui data
+        id: 'get_sheet_loqui'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "Sheet1" }},
+              { "command": "getData", "args": { "range": "'Sheet1'!A:C" } }
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+
+      # Loqui supplemental data (1 column only: date_time
+      - name: get loqui data supplemental
+        id: 'get_sheet_loqui_supp'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "FromLogsAndDan" }},
+              { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" } }
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+
+      # Now we want to render all the html files from the Rmd files
       - name: Run render html
         id: site
-        run: |
-          if [ ! -d .secrets ]; then
-            mkdir .secrets
-          fi
-          jq -n '${{ secrets.GSHEET_PRIVATE_KEY }}' > .secrets/${{ secrets.GSHEET_CLIENT_EMAIL }}
-          if test -f .secrets/${{ secrets.GSHEET_CLIENT_EMAIL }}; then
-            echo "Key created!"
-          fi
-          Rscript --vanilla "resources/render.R"
-          rm -rf .secrets
+        env:
+          # the output of the action above!
+          RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
+          RESULTS_LOQ_SUPP: $ {{ steps.get_sheet_loqui_supp.outputs.results }}
+        run:
+          Rscript --vanilla "resources/render.R" |
+          --data_in_loq "$RESULTS_LOQ" |
+          --data_in_loq_supp "$RESULTS_LOQ_SUPP"
 
       # This checks on the steps before it and makes sure that they completed.
       # If the renders didn't complete we don't want to commit the file changes

@@ -1,0 +1,238 @@
+---
+title: "Software Usage"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+## CRAN package download stats
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(DT)
+library(scales)
+library(googlesheets4)
+library(yaml)
+library(cranlogs)
+```
+
+```{r, echo=FALSE}
+download_stats <- cranlogs::cran_downloads(packages = c("ottrpal",
+                                                        "conrad",
+                                                        "ari",
+                                                        "text2speech",
+                                                        "metricminer"), #add more here within the parentheses
+                                                        from = "2017-08-31", #first version of ari published on 2017-08-31
+                                                        to = "last-day")
+```
+
+```{r, eval = FALSE, echo=FALSE}
+download_stats_contributing <- cranlogs::cran_downloads(packages = c("spatialTIME"),
+                                                        from = "2025-02-30", #date contribution was added to CRAN
+                                                        to = "last-day")
+
+download_stats <- rbind(download_stats, download_stats_contributing)
+```
+
+```{r, echo=FALSE, warning = FALSE, message=FALSE}
+download_stats_processed <- download_stats %>%
+  separate(date, into=c("year", "month name", "day"), sep = "-") %>%
+  unite("Month", c("year", "month name"), sep='-', remove=TRUE) %>%  
+  group_by(Month, package) %>%
+  summarise(monthly_downloads = sum(count)) %>% #summarize monthly downloads by package
+  filter(monthly_downloads > 0) #drop the 0's
+```
+
+<!--
+... plotting: Note that the color order is alphabetical
+
+Alphabetically the packages are
+- ari (color is `#440154`)
+- conrad (color is `#2c728e`)
+- metricminer (color is `#fde725`)
+- ottrpal (color is `#28ae80`)
+- spatialTime (when added, we'll use `#472d7b`)
+- text2speech (color is `#addc30`)
+
+Colors are viridis and have been grabbing options from here:
+c("#fde725", "#addc30", "#5ec962", "#28ae80", "#21918c", "#2c728e", "#3b528b", "#472d7b", "#440154")
+-->
+
+### Over time
+
+```{r echo = FALSE, fig.width=15.84, fig.height=6.39}
+
+package_colors <- c("#440154", "#2c728e", "#fde725", "#28ae80" ,"#addc30" )
+#package_colors <- c("#440154", "#2c728e", "#fde725", "#28ae80", "#472d7b" ,"#addc30" ) #adds in spatialTime
+
+months_vec <- seq(as.Date("2017-08-01"), #set this reference date to the first day of hte month to make this vector work (even though ari was added at the end of the month)
+                  as.Date(today()), by="months")
+
+download_stats_processed %>%
+  ggplot(aes(Month, monthly_downloads, group=package, color = package)) +
+     geom_line() +
+     geom_point() +
+     scale_colour_manual(values=package_colors) +
+     theme(panel.background = element_blank(),
+           panel.grid = element_blank(),
+           text = element_text(size = 17, family = "Arial")) +
+     geom_vline(aes(xintercept = "2019-05"), linetype='dashed', linewidth = 1.5, color = '#addc30') + #text2speech published date
+     geom_vline(aes(xintercept="2022-02"), linetype='dashed', linewidth = 1.5, color = '#28ae80') + #ottrpal published date
+     geom_vline(aes(xintercept="2023-07"), linetype='dashed', linewidth = 1.5, color = '#2c728e') + #conrad published date
+     geom_vline(aes(xintercept="2024-02"), linetype="dashed", linewidth = 1.5, color = '#fde725') + #metricminer published date
+     #geom_vline(aes(xintercept="2025-01"), linetype="dashed", linewidth = 1.5, color="#472d7b") + #spatialTime published witwh contributions date
+     theme(axis.text.x = element_text(angle = 90),
+           legend.position = "bottom") +
+     scale_x_discrete(breaks = format(months_vec[seq(1, length(months_vec), 2)], "%Y-%m")) + #every other month
+     labs(x = NULL,
+          y = "Monthly Downloads",
+          color = "R Packages")
+```
+
+### Total downloads by package {.tabset}
+
+#### For all time
+
+```{r, echo= FALSE}
+ DT::datatable(
+      download_stats_processed %>%
+      group_by(package) %>%
+      summarize(total_downloads = comma(sum(monthly_downloads))),
+      colnames = c("Package", "Total Downloads"),
+      options = list(lengthChange = FALSE, # remove "Show X entries"
+                     scrollY = "275px"), #may need to increase if you add packages and don't want to scroll
+      # For the table to grow/shrink
+      fillContainer = TRUE,
+      escape = FALSE
+    )
+```
+
+#### Past 6 months
+
+```{r, echo=FALSE}
+DT::datatable(
+      download_stats_processed %>%
+        filter(Month > format(as.Date(today() - months(6)), "%Y-%m")) %>% #within 6 months
+        group_by(package) %>%
+        summarize(total_downloads = comma(sum(monthly_downloads))),
+      colnames = c("Package", "Total Downloads (last 6 months)"),
+      options = list(lengthChange = FALSE, # remove "Show X entries"
+                     scrollY = "275px"), #may need to increase if you add packages and don't want to scroll
+      # For the table to grow/shrink
+      fillContainer = TRUE,
+      escape = FALSE
+    )
+```
+
+### Total downloads overall
+
+Total downloads, summed across packages, for all time:
+
+```{r echo=FALSE, results = 'asis'}
+cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
+```
+
+
+## GitHub Template Repositories
+
+```{r echo = FALSE}
+get_sync_repos <- function(read_yml_link){
+
+  sync_file_contents <- read_yaml(read_yml_link)
+
+  sync_repos <- sync_file_contents$group[[1]]$repos %>%
+    str_trim() %>%
+    as.data.frame() %>%
+    separate_longer_delim(cols = ".", delim="\n") %>%
+    separate(".", c("org", "repo"), sep = "/", remove = FALSE)
+
+  return(sync_repos)
+}
+```
+
+```{r echo=FALSE, results='asis'}
+echo_num <- function(sync_df, template_name){
+  cat(paste0("There are ", nrow(sync_df), " GitHub repositories receiving updates from the ", template_name, ". ", nrow(sync_df %>% filter(org == "jhudsl" | org == "fhdsl" | org == "ottrproject")), " of those are within the jhudsl, fhdsl, or ottrproject organizations"))
+}
+```
+
+### OTTR Template - Courses
+
+<!--
+Main OTTR template
+-->
+
+```{r echo=FALSE, results='asis'}
+sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/OTTR_Template/refs/heads/main/.github/sync.yml")
+echo_num(sync_repos, "OTTR_Template")
+```
+
+### OTTR Template - Websites
+
+<!--
+OTTR website template
+-->
+
+```{r echo=FALSE, results='asis'}
+web_sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/OTTR_Template_Website/refs/heads/main/.github/sync.yml")
+echo_num(web_sync_repos, "OTTR_Template_Website")
+```
+
+<!--
+### Metricminer Dashboard
+
+```{r echo = FALSE, eval = FALSE, results='asis'}
+dashboard_sync_repos <- get_sync_repos("https://raw.githubusercontent.com/ottrproject/metricminer-dashboard/refs/heads/main/.github/sync.yml")
+echo_num(dashboard_sync_repos, "metricminer-dashboard)
+```
+-->
+
+## Shiny Apps
+
+### Loqui
+
+<!--
+Add the logo?
+-->
+
+```{r echo=FALSE, message=FALSE, warning-FALSE, results='hide'}
+loqui_data <- sheet_results$loqui_data
+loqui_data_gaps <- sheet_results$loqui_data_supp
+```
+
+<!--
+Now (as of May 6 2025) fixed for data to this spreadsheet (previously wasn't as of July 2024)...Have timestamps (or placeholders) for videos that were produced with Loqui between those days/for which we don't have user data
+-->
+
+<!--
+`loqui_data_gaps` contains a mixture of the word "Placeholder" (videos that were made with Loqui, but without any stored metadata/users didn't receive an email of the video) and with a date/time (videos that were made with Loquid, without any stored metadata besides a timestamp note in the logs because users were sent an email of the video)
+
+`loqui_data` has a timestamp, a user email, and a video duration
+-->
+
+Number of unique Loqui users:
+
+```{r echo=FALSE, results = 'asis'}
+cat(length(unique(loqui_data$email)))
+```
+
+<!--
+Do we want to look at email domains and see what institutions we may be able to extrapolate?
+-->
+
+Number of videos made with Loqui:
+
+```{r echo=FALSE, results = 'asis'}
+cat(comma(nrow(loqui_data) + nrow(loqui_data_gaps)))
+```
+
+<!--
+Add average (or other stats...) duration of videos produced with Loqui?
+-->
+
+<!--
+Make a plot showing when loqui has been used? Does it get used a lot before semesters? Before the ITCR annual meeting? etc.
+-->

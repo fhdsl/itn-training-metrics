@@ -1,24 +1,67 @@
-# Render any materials relying on googlesheets4 package
+install.packages("jsonlite", repos = "https://cloud.r-project.org")
 
-# Make sure to set appropriate secrets to allow auto-rendering to happen.
-# This can be done via settings > secrets > actions menus.
-# Key should be generated in json format via the https://console.cloud.google.com/
-# interface, by creating a key that can be used by a Google Service Account.
+library(optparse) #make_option OptionParser parse_args
+library(jsonlite) #fromJSON
+library(here)
+library(tidyverse)
+library(magrittr)
 
-# Note that credentials need to be created in the pull_request.yml or
-# render-all.yml workflows first. Any Google Sheets in question must also be
-# shared with the Google Service Account.
+# ----------- Get the output from GHA -----
 
-# ------------- Authenticate --------------
 
-library(googlesheets4)
-
-gs4_deauth()
-gs4_auth(
-  token = gargle::credentials_service_account(path = paste0(
-    ".secrets/", grep(".json$", list.files(".secrets"), value = TRUE)
+# Look for the data_in argument
+option_list <- list(
+  optparse::make_option(
+    c("--data_in_loq"),
+    type = "character",
+    default = NULL,
+    help = "Sheet with Loqui data (json)"
   ),
-  scopes = "https://www.googleapis.com/auth/spreadsheets")
+  optparse::make_option(
+    c("--data_in_loq_supp"),
+    type = "character",
+    default = NULL,
+    help = "Sheet with supplemental Loqui data (json)"
+  )
 )
 
-rmarkdown::render_site()
+# Read the results provided as command line argument
+opt_parser <- optparsea::OptionParser(option_list = option_list)
+opt <- optparse::parse_args(opt_parser)
+jsonResults_loq <- opt$data_in_loq
+jsonResults_loq_supp <- opt$data_in_loq_supp
+
+# ---------- Interpret the JSON data -----
+
+#Pull the data itself from the API results
+dfloq <- fromJSON(jsonResults_loq)
+dfloq_supp <- fromJSON(jsonResults_loq_supp)
+
+dfloq <- dfloq$results$result$formatted[[2]]
+dfloq_supp <- dfloq_supp$results$result$formatted[[2]]
+
+colnames(dfloq) <- dfloq[1, ] #colnames taken from first row of data
+dfloq <- dfloq[-1, ] #remove the first row of data (original column names)
+colnames(dfloq_supp) <- dfloq_supp[1, ]
+dfloq_supp <- dfloq_supp[-1, ]
+
+dfloq <- tibble::as_tibble(dfloq)
+dfloq[dfloq==""]<- NA #make no responses NA
+
+dfloq %<>% drop_na()
+print(dim(dfloq))
+
+dfloq_supp <- tibble::as_tibble(dfloq_supp)
+dfloq_supp[dfloq_supp==""] <- NA
+
+dfloq_supp %<>% drop_na()
+print(dim(dfloq_supp))
+
+sheet_results <- list(
+  "loqui_data" <- dfloq,
+  "loqui_data_supp" <- dfloq_supp
+)
+
+rmarkdown::render_site(
+  envir = new.env(parent = globalenv()) #enable the use of sheet_results inside the Rmd files being rendered
+)
