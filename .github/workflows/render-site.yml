@@ -97,7 +97,7 @@ jobs:
          env:
            # the output of the action above!
            RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
-           RESULTS_LOQ_SUPP: $ {{ steps.get_sheet_loqui_supp.outputs.results }}
+           RESULTS_LOQ_SUPP: ${{ steps.get_sheet_loqui_supp.outputs.results }}
          run:
            Rscript --vanilla "resources/render.R" --data_in_loq "$RESULTS_LOQ" --data_in_loq_supp "$RESULTS_LOQ_SUPP"
 
