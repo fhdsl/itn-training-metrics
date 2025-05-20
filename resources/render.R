@@ -28,10 +28,8 @@ option_list <- list(
 # Read the results provided as command line argument
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
-message("got here")
 jsonResults_loq <- opt$data_in_loq
 jsonResults_loq_supp <- opt$data_in_loq_supp
-message("got here too")
 
 # ---------- Interpret the JSON data -----
 
@@ -54,13 +52,13 @@ dfloq <- tibble::as_tibble(dfloq)
 dfloq[dfloq==""]<- NA #make no responses NA
 
 dfloq %<>% drop_na()
-print(dim(dfloq))
+message(dim(dfloq))
 
 dfloq_supp <- tibble::as_tibble(dfloq_supp)
 dfloq_supp[dfloq_supp==""] <- NA
 
 dfloq_supp %<>% drop_na()
-print(dim(dfloq_supp))
+message(dim(dfloq_supp))
 
 sheet_results <- list(
   "loqui_data" <- dfloq,

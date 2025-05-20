@@ -133,7 +133,7 @@ jobs:
           commands: | #list of commands, specified as a valid JSON string
             [
               { "command": "getWorksheet", "args": { "worksheetTitle": "Sheet1" }},
-              { "command": "getData", "args": { "range": "'Sheet1'!A:C" } }
+              { "command": "getData", "args": { "range": "'Sheet1'!A:C" }}
             ]
         env:
           GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
@@ -148,7 +148,7 @@ jobs:
           commands: | #list of commands, specified as a valid JSON string
             [
               { "command": "getWorksheet", "args": { "worksheetTitle": "FromLogsAndDan" }},
-              { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" } }
+              { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" }}
             ]
         env:
           GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
@@ -162,8 +162,8 @@ jobs:
           RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
           RESULTS_LOQ_SUPP: $ {{ steps.get_sheet_loqui_supp.outputs.results }}
         run:
-          Rscript --vanilla "resources/render.R" |
-          --data_in_loq "$RESULTS_LOQ" |
+          Rscript --vanilla "resources/render.R" \
+          --data_in_loq "$RESULTS_LOQ" \
           --data_in_loq_supp "$RESULTS_LOQ_SUPP"
 
       # This checks on the steps before it and makes sure that they completed.
