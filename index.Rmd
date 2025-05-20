@@ -7,6 +7,7 @@ output:
 This website serves as a way to track and visualize how ITN training and resources are utilized.
 
 Specific resources are split among the following pages:
+
 * Software (e.g., CRAN package downloads, GitHub template utilization, and Shiny App usage)
 * Online courses (e.g., online book versions, Leanpub, and Coursera)
 * In-person training (e.g., attendance and survey responses)

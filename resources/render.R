@@ -61,8 +61,8 @@ dfloq_supp %<>% drop_na()
 message(dim(dfloq_supp))
 
 sheet_results <- list(
-  "loqui_data" <- dfloq,
-  "loqui_data_supp" <- dfloq_supp
+  loqui_data <- dfloq,
+  loqui_data_supp <- dfloq_supp
 )
 
 rmarkdown::render_site(
