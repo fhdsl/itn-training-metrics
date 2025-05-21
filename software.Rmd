@@ -243,8 +243,8 @@ loqui_data_dates <- loqui_data %>%
   mutate(date_time = lubridate::ymd(date_time)) %>%
   select(date_time)
 
-ldg <- loqui_data_gaps %>% filter(date_time != "Placeholder")
-loqui_gaps_dates <- as.Date(lubridate::as_datetime(purrr::simplify(ldg$date_time))) %>% as_tibble() %>% `colnames<-`(c("date_time"))
+ldg <- loqui_data_gaps %>% filter(value != "Placeholder")
+loqui_gaps_dates <- as.Date(lubridate::as_datetime(purrr::simplify(ldg$value))) %>% as_tibble() %>% `colnames<-`(c("date_time"))
 
 binded_data <- bind_rows(
   loqui_data_dates,
