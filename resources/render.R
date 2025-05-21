@@ -60,7 +60,7 @@ dfloq_supp[dfloq_supp==""] <- NA
 
 dfloq_supp %<>% drop_na()
 message(dim(dfloq_supp))
-message(colnames(dflog_supp))
+message(colnames(dfloq_supp))
 
 sheet_results <- list(
   loqui_data = dfloq,
