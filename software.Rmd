@@ -129,7 +129,7 @@ DT::datatable(
 
 ### Total downloads overall
 
-Total downloads, summed across packages, for all time:
+**Total downloads**, summed across packages, for all time:
 
 ```{r echo=FALSE, results = 'asis'}
 cat(comma(unlist(download_stats %>% dplyr::summarize(download_total = sum(count)), use.names = FALSE)))
@@ -155,7 +155,7 @@ get_sync_repos <- function(read_yml_link){
 
 ```{r echo=FALSE, results='asis'}
 echo_num <- function(sync_df, template_name){
-  cat(paste0("There are ", nrow(sync_df), " GitHub repositories receiving updates from the ", template_name, ". ", nrow(sync_df %>% filter(org == "jhudsl" | org == "fhdsl" | org == "ottrproject")), " of those are within the jhudsl, fhdsl, or ottrproject organizations"))
+  cat(paste0("There are ", nrow(sync_df), " GitHub **epositories receiving updates from the ", template_name, "**. ", nrow(sync_df %>% filter(org == "jhudsl" | org == "fhdsl" | org == "ottrproject")), " of those are within the jhudsl, fhdsl, or ottrproject organizations"))
 }
 ```
 
@@ -213,26 +213,79 @@ Now (as of May 6 2025) fixed for data to this spreadsheet (previously wasn't as 
 `loqui_data` has a timestamp, a user email, and a video duration
 -->
 
-Number of unique Loqui users:
+**Number of unique Loqui users**:
 
 ```{r echo=FALSE, results = 'asis'}
 cat(length(unique(loqui_data$email)))
 ```
 
-<!--
-Do we want to look at email domains and see what institutions we may be able to extrapolate?
--->
-
-Number of videos made with Loqui:
+**Number of videos made with Loqui**:
 
 ```{r echo=FALSE, results = 'asis'}
 cat(comma(nrow(loqui_data) + nrow(loqui_data_gaps)))
 ```
 
 <!--
-Add average (or other stats...) duration of videos produced with Loqui?
+Want a graph of when loqui was used
+
+The main dataset has a more "readable"/word format for dates, made with the blastula package's add_readable_time function (https://github.com/FredHutch/loqui/blob/160c3e820ccf2463c62375124c668be03a9e387f/app.R#L461, https://github.com/rstudio/blastula/blob/master/R/add_readable_time.R). Need to undo that action to combine it with the gaps/log data and plot
 -->
 
+```{r echo = FALSE, results = 'asis', message = FALSE, warning = FALSE}
+loqui_data_dates <- loqui_data %>%
+  separate(date_time, c("date", "time"), sep=" at ") %>%
+  separate(date, c("weekday", "month_day", "year"), sep = ", ") %>%
+  separate(month_day, c("month", "day"), sep = " ") %>%
+  mutate(month = match(month, month.name)) %>%
+  mutate(month = formatC(month, width = 2, format = "d", flag = "0"),
+         day = formatC(as.integer(day), width = 2, format = "d", flag = "0")) %>%
+  unite(date_time, c(year, month, day), sep = "-") %>%
+  mutate(date_time = lubridate::ymd(date_time)) %>%
+  select(date_time)
+
+ldg <- loqui_data_gaps %>% filter(date_time != "Placeholder")
+loqui_gaps_dates <- as.Date(lubridate::as_datetime(purrr::simplify(ldg$date_time))) %>% as_tibble() %>% `colnames<-`(c("date_time"))
+
+binded_data <- bind_rows(
+  loqui_data_dates,
+  loqui_gaps_dates
+)
+
+count_df <- binded_data %>%
+  group_by(date_time) %>%
+  summarize(count = n())
+
+alldays_df <- data.frame(date_time = ymd(seq.Date(as.Date(min(count_df$date_time)), as.Date(max(count_df$date_time)), by = "days")), count = 0)
+daily_usage <- right_join(count_df, alldays_df, by="date_time") %>%
+  mutate(daily_count = coalesce(count.x, count.y)) %>% #this is setting days without a timestamp to 0 and adding a 0 to days with responses
+  select(!c(count.x, count.y)) %>%
+  arrange(date_time)
+toPlot <- daily_usage %>%
+  separate(date_time, into=c("year", "month name", "day"), sep = "-") %>%
+  unite("Month", c("year", "month name"), sep='-', remove=TRUE) %>%
+  group_by(Month) %>%
+  summarize(monthly_count = sum(daily_count))
+
+highest_day_index <- which(daily_usage$daily_count == max(daily_usage$daily_count))  
+```
 <!--
 Make a plot showing when loqui has been used? Does it get used a lot before semesters? Before the ITCR annual meeting? etc.
 -->
+
+```{r echo=FALSE, message = FALSE, warning = FALSE}
+toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
+   geom_line() +
+   geom_point() +
+   theme(panel.background = element_blank(),
+         panel.grid = element_blank(),
+         text = element_text(size = 17, family = "Arial")) +
+   #geom_vline(aes(xintercept = "2024-09"), linetype='dashed', linewidth = 1.5) + #ITCR Annual Meeting 2024
+   theme(axis.text.x = element_text(angle = 90)) +
+   #scale_x_discrete(breaks = format(months_vec[seq(1, length(months_vec), 2)], "%Y-%m")) + #every other month
+   labs(x = NULL,
+        y = "Monthly Count")
+```
+
+The highest single day usage of Loqui was on `r daily_usage[highest_day_index, "date_time"]`, with a total of `r daily_usage[highest_day_index, "daily_count"]` videos produced.
+
+There have been a total of `r length(which(daily_usage$daily_count >= 25))` days where at least 25 videos were made with Loqui. 

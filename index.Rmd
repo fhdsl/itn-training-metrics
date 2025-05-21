@@ -20,5 +20,5 @@ However, the workflows appear to be old OTTR at the moment.
 -->
 
 <!--
-Attempting to use non-interactive authorization to read in google spreadsheets and thought I had it after emulating the 2024 AnVIL Poll
+We're using non-interactive authorization to read in google spreadsheets. Relevant code is in `.github/workflows/pull_request.yml`, `.github/workflows/render-site.yml`, and `resources/render.R`
 -->
