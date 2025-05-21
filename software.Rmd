@@ -272,6 +272,8 @@ highest_day_index <- which(daily_usage$daily_count == max(daily_usage$daily_coun
 Make a plot showing when loqui has been used? Does it get used a lot before semesters? Before the ITCR annual meeting? etc.
 -->
 
+#### Over time
+
 ```{r echo=FALSE, message = FALSE, warning = FALSE}
 toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
    geom_line() +
@@ -286,6 +288,4 @@ toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
         y = "Monthly Count")
 ```
 
-The highest single day usage of Loqui was on `r daily_usage[highest_day_index, "date_time"]`, with a total of `r daily_usage[highest_day_index, "daily_count"]` videos produced.
-
-There have been a total of `r length(which(daily_usage$daily_count >= 25))` days where at least 25 videos were made with Loqui.
+The **highest single day usage** of Loqui was on `r daily_usage[highest_day_index, "date_time"]`, with a total of `r daily_usage[highest_day_index, "daily_count"]` **videos produced**. There have been a total of `r length(which(daily_usage$daily_count >= 25))` days where at least 25 videos were made with Loqui.
