@@ -53,12 +53,14 @@ dfloq[dfloq==""]<- NA #make no responses NA
 
 dfloq %<>% drop_na()
 message(dim(dfloq))
+message(colnames(dfloq))
 
 dfloq_supp <- tibble::as_tibble(dfloq_supp)
 dfloq_supp[dfloq_supp==""] <- NA
 
 dfloq_supp %<>% drop_na()
 message(dim(dfloq_supp))
+message(colnames(dflog_supp))
 
 sheet_results <- list(
   loqui_data = dfloq,
