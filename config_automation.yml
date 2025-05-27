@@ -1,4 +1,3 @@
-
 ### Render preview of content with changes (Rmd's and md's are checked)
 render-preview: true
 
@@ -31,4 +30,6 @@ render-website: rmd_web
 
 # What docker image should be used for rendering?
 # The default is jhudsl/base_ottr:main
-rendering-docker-image: 'jhudsl/base_ottr:main'
+
+rendering-docker-image: 'jhudsl/ottr_metrics:main'
+
