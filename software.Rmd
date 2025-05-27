@@ -229,6 +229,8 @@ cat(comma(nrow(loqui_data) + nrow(loqui_data_gaps)))
 Want a graph of when loqui was used
 
 The main dataset has a more "readable"/word format for dates, made with the blastula package's add_readable_time function (https://github.com/FredHutch/loqui/blob/160c3e820ccf2463c62375124c668be03a9e387f/app.R#L461, https://github.com/rstudio/blastula/blob/master/R/add_readable_time.R). Need to undo that action to combine it with the gaps/log data and plot
+
+Had to use this resource to get the gaps data to work with the regular dataset: https://forum.posit.co/t/unlist-converts-date-objects-back-to-numeric/83166/4
 -->
 
 ```{r echo = FALSE, results = 'asis', message = FALSE, warning = FALSE}
