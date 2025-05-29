@@ -1,7 +1,7 @@
 cheatsheet
 Coursera
 css
-custimization
+customization
 cwrigh
 Dockerfile
 Dockerhub
