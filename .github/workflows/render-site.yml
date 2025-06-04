@@ -43,7 +43,7 @@ jobs:
       image: ${{needs.yaml-check.outputs.rendering_docker_image}}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out your repository so your job can access it
       - name: checkout
         uses: actions/checkout@v4
         with:
