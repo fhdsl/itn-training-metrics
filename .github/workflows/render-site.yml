@@ -91,20 +91,6 @@ jobs:
           GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
           GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
 
-      # course counts for leanpub and coursera
-      - name: get course counts for leanpub and coursera
-        id: 'get_sheet_courses'
-        uses: jroehl/gsheet.action@v2.1.1
-        with:
-          spreadsheetId: '1-8vox2LzkVKzhmSFXCWjwt3jFtK-wHibRAq2fqbxEyo'
-          commands: | #list of commands, specified as a valid JSON string
-            [
-              { "command": "getWorksheet", "args": { "worksheetTitle": "Course_data" }},
-              { "command": "getData", "args": { "range": "'Course_data'!A1:I14" }}
-            ]
-        env:
-          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
-          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
 
       # Now we want to render all the html files from the Rmd files
       - name: Run render html
@@ -116,8 +102,7 @@ jobs:
           RESULTS_COURSES: ${{ steps.get_sheet_courses.outputs.results }}
         run: |
           Rscript --vanilla "resources/render.R" --data_in_loq "$RESULTS_LOQ" \
-                                                 --data_in_loq_supp "$RESULTS_LOQ_SUPP" \
-                                                 --data_in_courses "$RESULTS_COURSES"
+                                                 --data_in_loq_supp "$RESULTS_LOQ_SUPP"
 
       # This checks on the steps before it and makes sure that they completed.
       # If the renders didn't complete we don't want to commit the file changes
