@@ -60,36 +60,36 @@ jobs:
       - name: Delete old *.html
         run: Rscript -e "rmarkdown::clean_site(preview = FALSE)"
 
-       #Now we want to get data from googlesheets and make it available to all of the Rmds and render all the html files from the Rmd files
-       # Loqui data (3 columns: date_time, video_duration, email)
-       - name: get loqui data
-         id: 'get_sheet_loqui'
-         uses: jroehl/gsheet.action@v2.1.1
-         with:
-           spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
-           commands: | #list of commands, specified as a valid JSON string
-             [
-               { "command": "getWorksheet", "args": { "worksheetTitle": "Sheet1" }},
-               { "command": "getData", "args": { "range": "'Sheet1'!A:C" } }
-             ]
-         env:
-           GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
-           GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+      #Now we want to get data from googlesheets and make it available to all of the Rmds and render all the html files from the Rmd files
+      # Loqui data (3 columns: date_time, video_duration, email)
+      - name: get loqui data
+        id: 'get_sheet_loqui'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "Sheet1" }},
+              { "command": "getData", "args": { "range": "'Sheet1'!A:C" } }
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
 
-       # Loqui supplemental data (1 column only: date_time
-       - name: get loqui data supplemental
-         id: 'get_sheet_loqui_supp'
-         uses: jroehl/gsheet.action@v2.1.1
-         with:
-           spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
-           commands: | #list of commands, specified as a valid JSON string
-             [
-               { "command": "getWorksheet", "args": { "worksheetTitle": "FromLogsAndDan" }},
-               { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" } }
-             ]
-         env:
-           GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
-           GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+      # Loqui supplemental data (1 column only: date_time
+      - name: get loqui data supplemental
+        id: 'get_sheet_loqui_supp'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "FromLogsAndDan" }},
+              { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" } }
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
 
       # course counts for leanpub and coursera
       - name: get course counts for leanpub and coursera
