@@ -24,7 +24,7 @@ option_list <- list(
     help = "Sheet with supplemental Loqui data (json)"
   ),
   optparse::make_option(
-    c("--date_in_courses"),
+    c("--data_in_courses"),
     type = "character",
     default = NULL,
     help = "Sheet with coursera and leanpub course numbers (json)"
