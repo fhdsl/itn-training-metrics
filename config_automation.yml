@@ -1,35 +1,30 @@
 ### Render preview of content with changes (Rmd's and md's are checked)
-render-preview: true
+render-preview: yes
 
 ##### Checks run at pull request #####
 # Check quiz formatting
-check-quizzes: false
+check-quizzes: no
 quiz_error_min: 0
 # Check that urls in the content are not broken
-url-checker: true
+url-checker: yes
 url_error_min: 0
 # Spell check Rmds and quizzes
-spell-check: true
+spell-check: yes
 spell_error_min: 0
 
 #### Other options
 # Style any R code
-style-code: true
+style-code: yes
 # Would you like your markdown files to be checked for formatting
-markdown-linter: true
+markdown-linter: yes
 # Would you like a readability report on your markdowns?
-readability-report: true
+readability-report: yes
 # Test build the docker image if any docker-relevant files have been changed
-docker-test: false
+docker-test: no
 # Should URLs be tested periodically?
-url-check-periodically: true
-
-##### Renderings run upon merge to main branch #####
-# Rendering each platform's content
-render-website: rmd_web
+url-check-periodically: yes
 
 # What docker image should be used for rendering?
 # The default is jhudsl/base_ottr:main
 
 rendering-docker-image: 'jhudsl/ottr_metrics:main'
-
