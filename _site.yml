@@ -1,0 +1,22 @@
+name: ITN Training and Resource Metrics
+output_dir: 'docs'
+navbar:
+  title: ITN Metric Dashboard
+  left:
+  - text: ""
+    href: index.html
+    icon: fa-home
+  - text: Software
+    href: software.html
+
+
+
+output:
+  html_document:
+    theme: cosmo
+    lib_dir: site_libs
+    self_contained: no
+    highlight: textmate
+    css: styles.css
+    includes:
+       in_header: resources/header.html
