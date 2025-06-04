@@ -177,10 +177,10 @@ jobs:
           RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
           RESULTS_LOQ_SUPP: ${{ steps.get_sheet_loqui_supp.outputs.results }}
           RESULTS_COURSES: ${{ steps.get_sheet_courses.outputs.results }}
-        run:
+        run: |
           Rscript --vanilla "resources/render.R" --data_in_loq "$RESULTS_LOQ" \
-          --data_in_loq_supp "$RESULTS_LOQ_SUPP" \
-          --data_in_courses "$RESULTS_COURSES"
+                                                 --data_in_loq_supp "$RESULTS_LOQ_SUPP" \
+                                                 --data_in_courses "$RESULTS_COURSES"
 
       # This checks on the steps before it and makes sure that they completed.
       # If the renders didn't complete we don't want to commit the file changes
