@@ -287,7 +287,7 @@ toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
    theme(axis.text.x = element_text(angle = 90)) +
    #scale_x_discrete(breaks = format(months_vec[seq(1, length(months_vec), 2)], "%Y-%m")) + #every other month
    labs(x = NULL,
-        y = "Monthly Count")
+        y = "Monthly Video Count")
 ```
 
 The **highest single day usage** of Loqui was on `r daily_usage[highest_day_index, "date_time"]`, with a total of `r daily_usage[highest_day_index, "daily_count"]` **videos produced**. There have been a total of `r length(which(daily_usage$daily_count >= 25))` days where at least 25 videos were made with Loqui.
