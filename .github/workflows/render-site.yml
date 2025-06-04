@@ -42,7 +42,8 @@ jobs:
     container:
       image: ${{needs.yaml-check.outputs.rendering_docker_image}}
 
-    steps: # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout
         uses: actions/checkout@v4
         with:
