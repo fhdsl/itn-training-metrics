@@ -286,7 +286,7 @@ toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
    #geom_vline(aes(xintercept = "2024-09"), linetype='dashed', linewidth = 1.5) + #ITCR Annual Meeting 2024
    theme(axis.text.x = element_text(angle = 90)) +
    #scale_x_discrete(breaks = format(months_vec[seq(1, length(months_vec), 2)], "%Y-%m")) + #every other month
-   labs(x = NULL,
+   labs(x = "Month",
         y = "Monthly Video Count")
 ```
 
