@@ -274,7 +274,7 @@ highest_day_index <- which(daily_usage$daily_count == max(daily_usage$daily_coun
 Make a plot showing when loqui has been used? Does it get used a lot before semesters? Before the ITCR annual meeting? etc.
 -->
 
-#### Over time
+#### Video Production Over time
 
 ```{r echo=FALSE, message = FALSE, warning = FALSE}
 toPlot %>% ggplot(aes(Month, monthly_count, group = 1)) +
