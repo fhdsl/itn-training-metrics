@@ -6,8 +6,11 @@ navbar:
   - text: ""
     href: index.html
     icon: fa-home
+  - text: Courses
+    href: courses.html
   - text: Software
     href: software.html
+
 
 
 
