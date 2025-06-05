@@ -24,12 +24,7 @@ docker-test: false
 # Should URLs be tested periodically?
 url-check-periodically: true
 
-##### Renderings run upon merge to main branch #####
-# Rendering each platform's content
-render-website: rmd_web
-
 # What docker image should be used for rendering?
 # The default is jhudsl/base_ottr:main
 
 rendering-docker-image: 'jhudsl/ottr_metrics:main'
-
