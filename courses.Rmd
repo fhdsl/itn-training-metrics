@@ -1,0 +1,22 @@
+---
+title: "Course Engagement and Enrollment"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+## Course Engagement
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(DT)
+library(scales)
+library(metricminer)
+```
+
+```{r}
+colnames(sheet_results$courses_data)
+```

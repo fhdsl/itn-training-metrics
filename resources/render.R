@@ -22,6 +22,12 @@ option_list <- list(
     type = "character",
     default = NULL,
     help = "Sheet with supplemental Loqui data (json)"
+  ),
+  optparse::make_option(
+    c("--data_in_courses"),
+    type = "character",
+    default = NULL,
+    help = "Sheet with coursera and leanpub course numbers (json)"
   )
 )
 
@@ -30,41 +36,55 @@ opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 jsonResults_loq <- opt$data_in_loq
 jsonResults_loq_supp <- opt$data_in_loq_supp
+jsonResults_courses <- opt$data_in_courses
 
 # ---------- Interpret the JSON data -----
+json_to_df <- function(jsonResults){
 
-#Pull the data itself from the API results
-dfloq <- fromJSON(jsonResults_loq)
-message("this good")
-dfloq_supp <- fromJSON(jsonResults_loq_supp)
-message("this also good")
+  #Pull the data itself from the API results
+  df <- fromJSON(jsonResults)
+  df <- df$results$result$formatted[[2]]
 
-dfloq <- dfloq$results$result$formatted[[2]]
-dfloq_supp <- dfloq_supp$results$result$formatted[[2]]
-message("through here fine")
+  colnames(df) <- df[1, ] #colnames taken from first row of data
+  df <- df[-1, ] #remove the first row of data (original column names)
 
-colnames(dfloq) <- dfloq[1, ] #colnames taken from first row of data
-dfloq <- dfloq[-1, ] #remove the first row of data (original column names)
-colnames(dfloq_supp) <- dfloq_supp[1, ]
-dfloq_supp <- dfloq_supp[-1, ]
+  df <- tibble::as_tibble(df)
+  df[df==""] <- NA #make no responses NA
 
-dfloq <- tibble::as_tibble(dfloq)
-dfloq[dfloq==""]<- NA #make no responses NA
+  return(df)
+}
+
+# loqui data
+dfloq <- json_to_df(jsonResults_loq)
 
 dfloq %<>% drop_na()
 message(dim(dfloq))
 message(colnames(dfloq))
 
-dfloq_supp <- tibble::as_tibble(dfloq_supp)
-dfloq_supp[dfloq_supp==""] <- NA
+# supplemental loqui data
+dfloq_supp <- json_to_df(jsonResults_loq_supp)
 
 dfloq_supp %<>% drop_na()
 message(dim(dfloq_supp))
 message(colnames(dfloq_supp))
 
+# leanpub and coursera course data
+dfcourses <- json_to_df(jsonResults_courses)
+
+message(dim(dfcourses))
+message(colnames(dfcourses))
+
+# google analytics for courses
+auth_from_secret("google",
+  refresh_token = Sys.getenv("METRICMINER_GOOGLE_REFRESH"),
+  access_token = Sys.getenv("METRICMINER_GOOGLE_ACCESS"),
+  cache = TRUE
+)
+
 sheet_results <- list(
   loqui_data = dfloq,
-  loqui_data_supp = dfloq_supp
+  loqui_data_supp = dfloq_supp,
+  courses_data = dfcourses
 )
 
 rmarkdown::render_site(
