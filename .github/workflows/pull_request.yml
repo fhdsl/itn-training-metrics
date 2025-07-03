@@ -4,8 +4,7 @@
 name: Pull Request
 
 on:
-  pull_request:
-    branches: [ main, staging ]
+  pull_request
 
 jobs:
 
@@ -109,6 +108,7 @@ jobs:
           git commit -m 'Style *mds' || echo "No changes to commit"
           git push origin || echo "No changes to commit"
 
+
 ############################# Readability Report ###################################
 
   readability-report:
@@ -129,6 +129,7 @@ jobs:
           github-token: ${{ secrets.GH_PAT }}
           glob: '**/*.md'
 
+
 ############################# Render Preview ###################################
   render-preview:
     name: Render preview
@@ -138,15 +139,140 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
+    container:
+      image: ${{needs.yaml-check.outputs.rendering_docker_image}}
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout files
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Run render
-      uses: ottrproject/ottr-preview@main
-      with:
-        toggle_website: ${{needs.yaml-check.outputs.toggle_website}}
-        docker_image: ${{needs.yaml-check.outputs.rendering_docker_image}}
+      # Set up git checkout
+      - name: Set up git checkout
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          branch_name='preview-${{ github.event.pull_request.number }}'
+          git fetch --all
+          git checkout $branch_name
+          git merge -s recursive --strategy-option=theirs origin/${{ github.head_ref }} --allow-unrelated-histories
+        shell: bash
+
+      # We want a fresh run of the renders each time - so first delete old html files
+      - name: Delete old *.html
+        run: Rscript -e "rmarkdown::clean_site(preview = FALSE)"
+
+      #Now we want to get data from googlesheets and make it available to all of the Rmds and render all the html files from the Rmd files
+      # Loqui data (3 columns: date_time, video_duration, email)
+      - name: get loqui data
+        id: 'get_sheet_loqui'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "Sheet1" }},
+              { "command": "getData", "args": { "range": "'Sheet1'!A:C" }}
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+
+      # Loqui supplemental data (1 column only: date_time
+      - name: get loqui data supplemental
+        id: 'get_sheet_loqui_supp'
+        uses: jroehl/gsheet.action@v2.1.1
+        with:
+          spreadsheetId: '1G_HTU-bv2k5txExP8EH3ScUfGqtW1P3syThD84Z-g9k'
+          commands: | #list of commands, specified as a valid JSON string
+            [
+              { "command": "getWorksheet", "args": { "worksheetTitle": "FromLogsAndDan" }},
+              { "command": "getData", "args": { "range": "'FromLogsAndDan'!A1:A135" }}
+            ]
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+
+      # Now we want to render all the html files from the Rmd files
+      - name: Run render html
+        id: site
+        env:
+          # the output of the action above!
+          RESULTS_LOQ: ${{ steps.get_sheet_loqui.outputs.results }}
+          RESULTS_LOQ_SUPP: ${{ steps.get_sheet_loqui_supp.outputs.results }}
+        run:
+          Rscript --vanilla "resources/render.R" --data_in_loq "$RESULTS_LOQ" --data_in_loq_supp "$RESULTS_LOQ_SUPP"
+
+      # This checks on the steps before it and makes sure that they completed.
+      # If the renders didn't complete we don't want to commit the file changes
+      - name: Check on render steps
+        if: steps.site.outcome != 'success'
+        run: |
+          echo site status ${{steps.site.outcome}}
+          exit 1
+
+      - name: Website preview for download
+        run: zip website-preview.zip docs/* -r
+
+      # Commit the website files
+      - name: Commit rendered website files
+        id: commit
+        run: |
+          branch_name='preview-${{ github.event.pull_request.number }}'
+          git diff origin/main -- docs >/dev/null && changes=true || changes=false
+          echo "changes=$changes" >> $GITHUB_OUTPUT
+          git add . --force
+          git commit -m 'Render preview' || echo "No changes to commit"
+          git pull --rebase --set-upstream origin $branch_name --allow-unrelated-histories --strategy-option=ours
+          git push --force || echo "No changes to commit"
+        shell: bash
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: latest commit
+
+      - name: Build components of the comment
+        id: build-components
+        run: |
+          course_name=$(head -n 1 _website.yml | cut -d'"' -f 2| tr " " "-")
+          website_link=$(echo "https://htmlpreview.github.io/?https://raw.githubusercontent.com/$GITHUB_REPOSITORY/preview-${{ github.event.pull_request.number }}/docs/index.html")
+          docs_link=$(echo "https://github.com/$GITHUB_REPOSITORY/raw/preview-${{ github.event.pull_request.number }}/website-preview.zip")
+          echo "zip_link=$docs_link" >> $GITHUB_OUTPUT
+          echo "website_link=$website_link" >> $GITHUB_OUTPUT
+          echo "time=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          echo "commit_id=$GITHUB_SHA" >> $GITHUB_OUTPUT
+          echo ${{steps.commit.outputs.changes}}
+
+      - name: Create or update comment
+        if: steps.commit.outputs.changes == 'true'
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            :eyes: Quick [preview of website here](${{ steps.build-components.outputs.website_link }}) \*
+            :microscope: Comprehensive [download of the website here](${{ steps.build-components.outputs.zip_link }})
+
+            \* note not all html features will be properly displayed in the "quick preview" but it will give you a rough idea.
+
+            _Updated at ${{ steps.build-components.outputs.time }} with changes from the latest commit ${{ steps.build-components.outputs.commit_id }}_
+          edit-mode: replace
+
+      - name: No comment if no changes
+        if: steps.commit.outputs.changes == 'false'
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            The latest commit did not produce rendering changes.
+
+            _Updated at ${{ steps.build-components.outputs.time }} with changes from ${{ steps.build-components.outputs.commit_id }}_
+          edit-mode: replace
