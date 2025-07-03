@@ -14,6 +14,7 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 library(tidyverse)
 library(DT)
 library(scales)
+library(metricminer)
 ```
 
 ```{r}

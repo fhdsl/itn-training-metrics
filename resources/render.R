@@ -74,6 +74,12 @@ dfcourses <- json_to_df(jsonResults_courses)
 message(dim(dfcourses))
 message(colnames(dfcourses))
 
+# google analytics for courses
+auth_from_secret("google",
+  refresh_token = Sys.getenv("METRICMINER_GOOGLE_REFRESH"),
+  access_token = Sys.getenv("METRICMINER_GOOGLE_ACCESS"),
+  cache = TRUE
+)
 
 sheet_results <- list(
   loqui_data = dfloq,
